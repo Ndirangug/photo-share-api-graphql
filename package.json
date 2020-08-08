@@ -9,7 +9,6 @@
     "start": "nodemon -e js,json,graphql"
   },
   "dependencies": {
-    "apollo-server": "^2.16.1",
     "graphql": "^15.3.0",
     "nodemon": "^2.0.4"
   }
