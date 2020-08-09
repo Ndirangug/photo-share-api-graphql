@@ -1,105 +1,32 @@
 // 1. Require 'apollo-server'
-const { ApolloServer } = require("apollo-server");
-const { GraphQLScalarType } = require("graphql");
+const { ApolloServer } = require("apollo-server-express");
+const express = require("express");
+const expressPlayground = require("graphql-playground-middleware-express")
+  .default;
+const { readFileSync } = require("fs");
 
-const typeDefs = `
+const typeDefs = readFileSync("./typeDefs.graphql", "UTF-8");
+const resolvers = require("./resolvers");
 
-scalar DateTime
-
-enum PhotoCategory {
-  SELFIE
-  PORTRAIT
-  ACTION
-  LANDSCAPE
-  GRAPHIC
-}
-
-input photoInput{
-  name: String!
-  description: String
-  category: PhotoCategory=PORTRAIT
-}
-
-type Photo {
-  id: ID!
-  url: String!
-  name: String!
-  description: String
-  category: PhotoCategory!
-  postedBy: User!
-  created: DateTime!
-}
-
-type User {
-  githubLogin: ID!
-  name: String
-  avatar: String
-  postedPhotos: [Photo!]!
-}
-  
-type Query {
-  totalPhotos: Int!
-  allPhotos(after: DateTime): [Photo!]!
-}
-
-type Mutation{
-  postPhoto(input: photoInput): Photo!
-}
-`;
-
-const resolvers = {
-  Query: {
-    totalPhotos: () => photos.length,
-    allPhotos: () => photos,
-  },
-
-  Mutation: {
-    postPhoto(parent, args) {
-      var newPhoto = {
-        id: _id++,
-        ...args.input,
-        created: new Date()
-      };
-      photos.push(newPhoto);
-
-      return newPhoto;
-    },
-  },
-
-  Photo: {
-    url: (parent) => `http://yoursite.com/img/${parent.id}.jpg`,
-    postedBy: (parent) => {
-      return users.find((u) => u.githubLogin === parent.githubUser);
-    },
-  },
-
-  User: {
-    postedPhotos: (parent) => {
-      return photos.filter((p) => p.githubUser === parent.githubLogin);
-    },
-  },
-
-  DateTime: new GraphQLScalarType({
-    name: "DateTime",
-    description: "A valid date time value.",
-    parseValue: (value) => new Date(value),
-    serialize: (value) => new Date(value).toISOString(),
-    parseLiteral: (ast) => ast.value,
-  }),
-};
+var app = express();
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
 
-server
-  .listen()
-  .then(({ url }) => console.log(`GraphQL Service running on ${url}`));
+server.applyMiddleware({ app });
+app.get("/", (req, res) => res.end("Welcome to the PhotoShare API"));
+app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
+app.listen({ port: 4000 }, () =>
+  console.log(
+    `GraphQL Server running @ http://localhost:4000${server.graphqlPath}`
+  )
+);
 
 //sample data
 
-_id = 0
+_id = 0;
 var users = [
   { githubLogin: "mHattrup", name: "Mike Hattrup" },
   { githubLogin: "gPlake", name: "Glen Plake" },
@@ -112,14 +39,14 @@ var photos = [
     description: "The heart chute is one of my favorite chutes",
     category: "ACTION",
     githubUser: "gPlake",
-    created: "3-28-1977"
+    created: "3-28-1977",
   },
   {
     id: "2",
     name: "Enjoying the sunshine",
     category: "SELFIE",
     githubUser: "sSchmidt",
-    created: "1-2-1985"
+    created: "1-2-1985",
   },
   {
     id: "3",
@@ -127,6 +54,6 @@ var photos = [
     description: "25 laps on gunbarrel today",
     category: "LANDSCAPE",
     githubUser: "sSchmidt",
-    created: "2018-04-15T19:09:57.308Z"
+    created: "2018-04-15T19:09:57.308Z",
   },
 ];
