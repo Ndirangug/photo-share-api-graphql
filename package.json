@@ -13,6 +13,8 @@
     "express": "^4.17.1",
     "graphql": "^15.3.0",
     "graphql-playground-middleware-express": "^1.7.18",
+    "graphql-request": "^3.0.0",
+    "mysql": "^2.18.1",
     "nodemon": "^2.0.4"
   }
 }

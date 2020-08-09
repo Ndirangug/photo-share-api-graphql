@@ -31,6 +31,11 @@ type User {
   postedPhotos: [Photo!]!
 }
 
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
 type Query {
   totalPhotos: Int!
   allPhotos(after: DateTime): [Photo!]!
@@ -38,4 +43,9 @@ type Query {
 
 type Mutation {
   postPhoto(input: photoInput): Photo!
+  githubAuth(code: String!): AuthPayload!
+}
+
+type Subscription {
+  newPhoto: Photo!
 }
